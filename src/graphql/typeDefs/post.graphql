@@ -1,0 +1,42 @@
+type Query {
+  getPosts(query: String): [Post!]!
+  postById: Post!
+}
+
+type Mutation {
+  createPost(data: CreatePostInput): Post!
+  deletePost(id: ID!): Post!
+  updatePost(id: ID!, data: UpdatePostInput): Post!
+}
+
+type Subscription {
+  post: PostSuscriptionPayload! 
+}
+
+input CreatePostInput {
+  title: String!
+  body: String!
+  published: Boolean
+  author: ID!
+}
+
+input UpdatePostInput {
+  title: String
+  body: String
+  published: Boolean
+  author: ID
+}
+
+type Post {
+  id: ID!
+  title: String!
+  body: String!
+  published: Boolean!
+  author: User!
+  comments: [Comment!]!
+}
+
+type PostSuscriptionPayload {
+  mutation: MutationType!
+  data: Post
+}

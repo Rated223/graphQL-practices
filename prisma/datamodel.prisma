@@ -1,0 +1,29 @@
+type User {
+  id: ID! @id
+  name: String!
+  email: String! @unique
+  posts: [Post!]!
+  comments: [Comment!]!
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime! @updatedAt
+}
+
+type Post {
+  id: ID! @id
+  title: String! @unique
+  body: String!
+  published: Boolean! @default(value: false)
+  author: User!
+  comments: [Comment!]!
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime! @updatedAt
+}
+
+type Comment {
+  id: ID! @id
+  text: String!
+  author: User!
+  post: Post!
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime! @updatedAt
+}

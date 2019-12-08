@@ -1,11 +1,12 @@
 import uuidv4 from 'uuid/v4';
 
 const Query = {
-  getUsers(parent, args, ctx, info) {
-    if(!args.query)
-      return ctx.db.Users
+  getUsers(parent, args, { db, prisma }, info) {
+    return prisma.query.users(null, info);
+    // if(!args.query)
+    //   return db.Users
 
-    return ctx.db.Users.filter(({name}) => name.toLowerCase().includes(args.query.toLowerCase()));
+    // return db.Users.filter(({name}) => name.toLowerCase().includes(args.query.toLowerCase()));
   },
   userById() {
     return {
@@ -17,22 +18,22 @@ const Query = {
 };
 
 const Mutation = {
-  createUser(parent, args, ctx, info) {
-    const emailTaken = ctx.db.Users.some(user => user.email === args.data.email);
+  createUser(parent, args, { db, prisma }, info) {
+    const emailTaken = db.Users.some(user => user.email === args.data.email);
     if (emailTaken) {
       throw new Error("Email already taken");
     }
     
     args.data.id = uuidv4();
-    ctx.db.Users.push(args.data);
+    db.Users.push(args.data);
     return args.data;
   },
-  deleteUser(parent, args, ctx, info) {
-    const index = ctx.db.Users.findIndex(user => user.id === args.id);
+  deleteUser(parent, args, { db, prisma }, info) {
+    const index = db.Users.findIndex(user => user.id === args.id);
     if (index === -1) {
       throw new Error("This user do not exist");
     }
-    const user = ctx.db.Users.splice(index, 1);
+    const user = db.Users.splice(index, 1);
     Posts = Posts.filter(post => {
       const match = post.author === args.id;
       if (match) {
@@ -43,13 +44,13 @@ const Mutation = {
     Comments = Comments.filter(comment => comment.author !== args.id)
     return user[0];
   },
-  updateUser(parent, args, ctx, info) {
-    const user = ctx.db.Users.find(user => user.id === args.id);
+  updateUser(parent, args, { db, prisma }, info) {
+    const user = db.Users.find(user => user.id === args.id);
     if(!user) {
       throw new Error('This user do not exist');
     }
     if (typeof args.data.email === 'string') {
-      const emailTaken = ctx.db.Users.some(user => user.email === args.data.email);
+      const emailTaken = db.Users.some(user => user.email === args.data.email);
       if(emailTaken) {
         throw new Error('This email already exist in another account');
       }
@@ -70,11 +71,11 @@ const Mutation = {
 };
 
 const User = {
-  posts(parent, args, ctx, info) {
-    return ctx.db.Posts.filter(post => post.author === parent.id);
+  posts(parent, args, { db, prisma }, info) {
+    return db.Posts.filter(post => post.author === parent.id);
   },
-  comments(parent, args, ctx, info) {
-    return ctx.db.Comments.filter(comment => comment.author === parent.id);
+  comments(parent, args, { db, prisma }, info) {
+    return db.Comments.filter(comment => comment.author === parent.id);
   }
 };
 

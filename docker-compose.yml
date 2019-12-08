@@ -4,8 +4,8 @@ services:
     image: postgres:12.1
     container_name: graphql-practices-db
     restart: always
-    ports: 
-      - "5432:5432"
+    # ports: 
+    #   - "5432:5432"
     environment:
       POSTGRES_PASSWORD: 1q2w3e4r5t6y
       POSTGRES_USER: user
@@ -38,6 +38,21 @@ services:
             rawAccess: true
             port: '5432'
             migrations: true
+    networks:
+      - "net"
+  server:
+    image: node-graphql-practices
+    build: 
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: graphql-practices-server
+    restart: always
+    ports: 
+      - "4000:4000"
+    depends_on:
+      - prisma
+    environment:
+      PRISMA_ENDPOINT: http://prisma:4466/
     networks:
       - "net"
 

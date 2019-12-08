@@ -1,15 +1,16 @@
 import uuidv4 from 'uuid/v4';
 
 const Query = {
-  getPosts(parent, args, ctx, info) {
-    if (!args.query) {
-      return ctx.db.Posts;
-    }
-    return ctx.db.Posts.filter(({title}) => {
-      return title.toLowerCase().includes(args.query.toLowerCase());
-    });
+  getPosts(parent, args, { db, prisma }, info) {
+    return prisma.query.posts(null, info);
+    // if (!args.query) {
+    //   return db.Posts;
+    // }
+    // return db.Posts.filter(({title}) => {
+    //   return title.toLowerCase().includes(args.query.toLowerCase());
+    // });
   },
-  postById(parent, args, ctx, info) {
+  postById(parent, args, { db, prisma }, info) {
     return {
       id: "234",
       title: "post title",
@@ -20,13 +21,13 @@ const Query = {
 };
 
 const Mutation = {
-  createPost(parent, args, ctx, info) {
-    const titleTaken = ctx.db.Posts.some(post => post.title === args.data.title);
+  createPost(parent, args, { db, prisma }, info) {
+    const titleTaken = db.Posts.some(post => post.title === args.data.title);
     if (titleTaken){
       throw new Error("This title belongs to another post");
     }
 
-    const userExist = ctx.db.Users.some(user => user.id === args.data.author);
+    const userExist = db.Users.some(user => user.id === args.data.author);
     if (!userExist) {
       throw new Error("The author do not exist");
     }
@@ -36,9 +37,9 @@ const Mutation = {
     }
 
     args.data.id = uuidv4();
-    ctx.db.Posts.push(args.data);
+    db.Posts.push(args.data);
     if (args.data.published) {
-      ctx.pubsub.publish(`post`, { 
+      pubsub.publish(`post`, { 
         post: {
           mutation: 'CREATED', 
           data: args.data 
@@ -47,17 +48,17 @@ const Mutation = {
     }
     return args.data;
   },
-  deletePost(parent, args, ctx, info) {
-    const index = ctx.db.Posts.findIndex(post => post.id === args.id);
+  deletePost(parent, args, { db, prisma }, info) {
+    const index = db.Posts.findIndex(post => post.id === args.id);
     if(index === -1){
       throw new Error('This post do not exist');
     }
-    const [post] = ctx.db.Posts.splice(index, 1);
+    const [post] = db.Posts.splice(index, 1);
 
-    ctx.db.Comments = ctx.db.Comments.filter(comment => comment.post !== args.id);
+    db.Comments = db.Comments.filter(comment => comment.post !== args.id);
 
     if (post.published) {
-      ctx.pubsub.publish(`post`, {
+      pubsub.publish(`post`, {
         post: {
           mutation: 'DELETED',
           data: post
@@ -67,8 +68,8 @@ const Mutation = {
 
     return post;
   },
-  updatePost(parent, args, ctx, info) {
-    const post = ctx.db.Posts.find(post => post.id === args.id);
+  updatePost(parent, args, { db, prisma }, info) {
+    const post = db.Posts.find(post => post.id === args.id);
     const originalPost = { ...Post };
 
     if(!post) {
@@ -76,7 +77,7 @@ const Mutation = {
     }
 
     if (typeof args.data.author !== 'undefined') {
-      const author = ctx.db.Users.find(user => user.id === args.data.author);
+      const author = db.Users.find(user => user.id === args.data.author);
       if (!author) {
         throw new Error('The author selected do not exist');
       } else {
@@ -96,14 +97,14 @@ const Mutation = {
       post.published = args.data.published;
 
       if (originalPost.published && !post.published) {
-        ctx.pubsub.publish('post', {
+        pubsub.publish('post', {
           post: {
             mutation: 'DELETED',
             data: originalPost
           }
         });
       } else if (!originalPost.published && post.published) {
-        ctx.pubsub.publish('post', {
+        pubsub.publish('post', {
           post: {
             mutation: 'CREATED',
             data: post
@@ -111,7 +112,7 @@ const Mutation = {
         });
       }
     } else if (post.published) {
-      ctx.pubsub.publish('post', {
+      pubsub.publish('post', {
         post: {
           mutation: 'UPDATED',
           data: post
@@ -125,18 +126,18 @@ const Mutation = {
 
 const Subscription = {
   post: {
-    subscribe(parent, args, ctx, info) {
-      return ctx.pubsub.asyncIterator(`post`);
+    subscribe(parent, args, { db, prisma }, info) {
+      return pubsub.asyncIterator(`post`);
     }
   }
 }
 
 const Post = {
-  author(parent, args, ctx, info) {
-    return ctx.db.Users.find(user => user.id === parent.author);
+  author(parent, args, { db, prisma }, info) {
+    return db.Users.find(user => user.id === parent.author);
   },
-  comments(parent, args, ctx, info) { 
-    return ctx.db.Comments.filter(comment => comment.post === parent.id)
+  comments(parent, args, { db, prisma }, info) { 
+    return db.Comments.filter(comment => comment.post === parent.id)
   }
 };
 

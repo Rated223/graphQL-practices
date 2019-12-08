@@ -5,7 +5,7 @@ const prisma = new Prisma({
   endpoint: 'http://localhost:4466'
 });
 
-prisma.query.users(null, '{ name email post { title } }').then(data => {
+prisma.query.users(null, '{ name email }').then(data => {
   console.log(data);
 }).catch((error) => {
   console.log(error[0].message);

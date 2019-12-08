@@ -6,7 +6,8 @@
   "scripts": {
     "start": "nodemon src/index.js --ext js,json,graphql --exec babel-node",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "get-prisma-schema": "graphql get-schema -p prisma"
+    "get-prisma-schema": "graphql get-schema -p prisma",
+    "get-graphql-cli": "graphql --help"
   },
   "keywords": [],
   "author": "",

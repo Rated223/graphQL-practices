@@ -55,6 +55,8 @@ services:
       PRISMA_ENDPOINT: http://prisma:4466/
     networks:
       - "net"
+    volumes:
+      - ./:/opt/graphql-practices
 
 networks:
   net:

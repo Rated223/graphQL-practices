@@ -1,74 +1,69 @@
 import uuidv4 from 'uuid/v4';
 
 const Query = {
-  getComments(parent, args, { db, prisma }, info){
-    return db.Comments;
+  getComments(parent, args, { prisma }, info){
+    return prisma.query.comments(null, info);
   }
 };
 
 const Mutation = {
-  createComment(parent, args, { db, prisma }, info) {
-    const userExist = db.Users.some(user => user.id === args.data.author);
+  async createComment(parent, args, { prisma }, info) {
+    const userExist = await prisma.exists.User({ id: args.data.author });
     if(!userExist) {
       throw new Error("The author do not exist");
     }
 
-    const postExist = db.Posts.some(post => post.id === args.data.post && post.published);
+    const authorId = args.data.author;
+    args.data.author = {
+      connect: {
+        id: authorId
+      }
+    }
+
+    const postExist = await prisma.exists.Post({ id: args.data.post, published: true });
     if(!postExist) {
       throw new Error("This post do not exist");
     }
 
-    args.data.id = uuidv4();
-    db.Comments.push(args.data);
-    pubsub.publish(`comment ${args.data.post}`, { 
-      comment: {
-        mutation: 'CREATED',
-        data: args.data
+    const postId = args.data.post;
+    args.data.post = {
+      connect: {
+        id: postId
       }
-    });
-    return args.data;
+    }
+
+    return await prisma.mutation.createComment({ data: args.data }, info)
   },
-  deleteComment(parent, args, { db, prisma }, info) {
-    const index = db.Comments.findIndex(comment => comment.id === args.id);
-    if(index === -1){
+  async deleteComment(parent, args, { prisma }, info) {
+    const commentExist = await prisma.exists.Comment({ id: args.id })
+
+    if(!commentExist){
       throw new Error('This comment do not exist');
     }
-    const [comment] = db.Comments.splice(index, 1);
-
-    pubsub.publish(`comment ${comment.post}`, {
-      comment: {
-        mutation: 'DELETED',
-        data: comment
-      }
-    });
-
-    return comment;
+    
+    return await prisma.mutation.deleteComment({where: { id: args.id } }, info);
   },
-  updateComment(parent, args, { db, prisma }, info) {
-    const comment = db.Comments.find(comment => comment.id === args.id);
+  async updateComment(parent, args, { prisma }, info) {
+    const commentExist = await prisma.exists.Comment({ id: args.id })
 
-    if (!comment) {
+    if(!commentExist){
       throw new Error('This comment do not exist');
     }
 
-    if ( typeof args.text === 'string') {
-      comment.text = args.text;
-    }
-
-    pubsub.publish(`comment ${comment.post}`, {
-      comment: {
-        mutation: 'UPDATED',
-        data: comment
+    return await prisma.mutation.updateComment({
+      data: {
+        text: args.text
+      },
+      where: {
+        id: args.id
       }
-    });
-
-    return comment;
+    }, info);
   }
 };
 
 const Subscription = {
   comment: {
-    subscribe(parent,args, { db, prisma }, info) {
+    subscribe(parent,args, { prisma }, info) {
       const postExist = db.Posts.find(post => args.post === post.id && post.published);
 
       if (!postExist) {
@@ -81,12 +76,7 @@ const Subscription = {
 }
 
 const Comment = {
-  author(parent, args, { db, prisma }, info) {
-    return db.Users.find(user => user.id === parent.author);
-  },
-  post(parent, args, { db, prisma }, info) {
-    return db.Posts.find(post => post.id === parent.post)
-  }
+
 };
 
 const commentResolver = {Query, Mutation, Subscription, Comment};

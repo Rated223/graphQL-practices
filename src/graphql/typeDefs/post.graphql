@@ -38,5 +38,5 @@ type Post {
 
 type PostSuscriptionPayload {
   mutation: MutationType!
-  data: Post
+  node: Post
 }

@@ -64,13 +64,15 @@ const Mutation = {
 const Subscription = {
   comment: {
     subscribe(parent,args, { prisma }, info) {
-      const postExist = db.Posts.find(post => args.post === post.id && post.published);
-
-      if (!postExist) {
-        throw new Error('This post do not exist');
-      }
-
-      return pubsub.asyncIterator(`comment ${args.post}`);
+      return prisma.subscription.comment({
+        where: {
+          node: {
+            post: {
+              id: args.post
+            }
+          }
+        }
+      }, info); 
     }
   }
 }

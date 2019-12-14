@@ -1,7 +1,12 @@
-import uuidv4 from 'uuid/v4';
+import { 
+  getUserIdFromToken,
+  verifyPostExist,
+  verifyTitleTaken,
+  verifyAuthorOfPost
+} from './helpers';
 
 const Query = {
-  getPosts(parent, args, { db, prisma }, info) {
+  getPosts(parent, args, { prisma }, info) {
     const opArgs = {};
 
     if (args.query) {
@@ -19,75 +24,31 @@ const Query = {
 
     return prisma.query.posts(opArgs, info);
   },
-  postById(parent, args, { prisma }, info) {
-    const opArgs = {
-      where: {
-        id: args.id
-      }
-    }
-    
+  async postById(parent, { id }, { prisma }, info) {
+    await verifyPostExist({ id });
+    const opArgs = { where: { id } }
     return prisma.query.user(opArgs,info);
   }
 };
 
 const Mutation = {
-  async createPost(parent, args, { prisma }, info) {
-    const titleTaken = await prisma.exists.Post({ title: args.data.title })
-
-    if (titleTaken){
-      throw new Error("This title belongs to another post");
-    }
-
-    const userExist = await prisma.exists.User({ id: args.data.author })
-
-    if (!userExist) {
-      throw new Error("The author do not exist");
-    }
-
-    const autorId = args.data.author;
-    args.data.author = {
-      connect: {
-        id: autorId
-      }
-    } 
-
-    return await prisma.mutation.createPost({ data: args.data }, info)
+  async createPost(parent, { data }, { prisma, request }, info) {
+    await verifyTitleTaken({ title: data.title, prisma });
+    const id = getUserIdFromToken({ request });
+    data.author = { connect: { id } } 
+    return await prisma.mutation.createPost({ data }, info)
   },
-  async deletePost(parent, args, { prisma }, info) {
-    const postExist = await prisma.exists.Post({ id: args.id })
-
-    if(!postExist){
-      throw new Error('This post do not exist');
-    }
-    
-    return await prisma.mutation.deletePost({where: { id: args.id } }, info);
+  async deletePost(parent, { id }, { prisma, request }, info) {
+    await verifyPostExist({ id, prisma });
+    const authorId = getUserIdFromToken({ request });
+    await verifyAuthorOfPost({ id, authorId, prisma });
+    return await prisma.mutation.deletePost({ where: { id } }, info);
   },
-  async updatePost(parent, args, { prisma }, info) {
-    const postExist = await prisma.exists.Post({ id:args.id });
-    if(!postExist) {
-      throw new Error('This post do not exist');
-    }
-    
-    if (typeof args.data.author !== 'undefined') {
-      const autorExist = await prisma.exists.User({ id: args.data.author });
-      if (!autorExist) {
-        throw new Error('The author selected do not exist');
-      } else {
-        const authorId = args.data.author;
-        args.data.author = {
-          connect: {
-            id: authorId
-          }
-        };
-      }
-    }
-    
-    return await prisma.mutation.updatePost({
-      data: args.data,
-      where: {
-        id: args.id
-      }
-    }, info);
+  async updatePost(parent, { id, data }, { prisma, request }, info) {
+    await verifyPostExist({ id, prisma });
+    const authorId = getUserIdFromToken({ request });
+    await verifyAuthorOfPost({ id, authorId, prisma });
+    return await prisma.mutation.updatePost({ data, where: { id } }, info);
   }
 };
 

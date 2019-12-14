@@ -11,10 +11,13 @@ const pubsub = new PubSub();
 const server = new GraphQLServer({ 
   typeDefs, 
   resolvers,
-  context: {
-    db,
-    pubsub,
-    prisma
+  context(request) {
+    return {
+      db,
+      pubsub,
+      prisma,
+      request
+    }
   }
 });
 

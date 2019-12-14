@@ -1,4 +1,12 @@
-import uuidv4 from 'uuid/v4';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { 
+  verifyEmailTaken,
+  getUserIdFromToken,
+  verifyUserExist,
+  getUserFromLoginInput,
+  verifyPasswordLength
+} from './helpers'
 
 const Query = {
   getUsers(parent, args, { prisma }, info) {
@@ -19,48 +27,33 @@ const Query = {
 
     return prisma.query.users(opArgs, info);
   },
-  userById(parent, args, { prisma }, info) {
-    const opArgs = {
-      where: {
-        id: args.id
-      }
-    }
+  async userById(parent, { id }, { prisma }, info) {
+    await verifyUserExist({ id });
+    const opArgs = { where: { id } }
     return prisma.query.user(opArgs, info)
   }
 };
 
 const Mutation = {
-  async createUser(parent, args, { prisma }, info) {
-    const emailTaken = await prisma.exists.User({ email: args.data.email });
-
-    if (emailTaken) {
-      throw new Error('This email already has an account.');
-    }
-
-    return await prisma.mutation.createUser({ data: args.data }, info);
+  async createUser(parent, { data }, { prisma }, info) {
+    await verifyEmailTaken({ email: data.email, prisma });
+    verifyPasswordLength({ password: data.password });
+    data.password = await bcrypt.hash(data.password, 10);
+    const user = await prisma.mutation.createUser({ data });
+    return { user, token: jwt.sign({ userId: user.id }, process.env.JWT_SECRET) }
   },
-  async deleteUser(parent, args, { prisma }, info) {
-    const userExist = await prisma.exists.User({ id: args.id });
-
-    if (!userExist) {
-      throw new Error('This user do not exist.');
-    }
-
-    return await prisma.mutation.deleteUser({ where: { id: args.id } }, info);
+  async login(parent, { data: {email, password} }, { prisma }, info) {
+    const user= await getUserFromLoginInput({ email, password, prisma });
+    return { user, token: jwt.sign({ userId: user.id }, process.env.JWT_SECRET) }
   },
-  async updateUser(parent, args, { prisma }, info) {
-    const userExist = await prisma.exists.User({ id: args.id });
-
-    if (!userExist) {
-      throw new Error('This user do not exist.');
-    }
-    
-    return await prisma.mutation.updateUser({
-      data: args.data,
-      where: {
-        id: args.id
-      }
-    }, info);
+  async deleteUser(parent, {}, { prisma, request }, info) {
+    const id = getUserIdFromToken({ request });
+    return await prisma.mutation.deleteUser({ where: { id } }, info);
+  },
+  async updateUser(parent, { data }, { prisma, request }, info) {
+    verifyPasswordLength({ password: data.password });
+    const id = await getUserIdFromToken({ request })
+    return await prisma.mutation.updateUser({  data, where: { id } }, info);
   }
 };
 

@@ -17,14 +17,12 @@ input CreatePostInput {
   title: String!
   body: String!
   published: Boolean
-  author: ID!
 }
 
 input UpdatePostInput {
   title: String
   body: String
   published: Boolean
-  author: ID
 }
 
 type Post {

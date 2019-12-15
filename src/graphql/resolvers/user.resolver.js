@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { 
   verifyEmailTaken,
+  generateToken,
   getUserIdFromToken,
   verifyUserExist,
   getUserFromLoginInput,
@@ -42,19 +43,22 @@ const Mutation = {
     verifyPasswordLength({ password: data.password });
     data.password = await bcrypt.hash(data.password, 10);
     const user = await prisma.mutation.createUser({ data });
-    return { user, token: jwt.sign({ userId: user.id }, process.env.JWT_SECRET) }
+    return { user, token: generateToken({ id: user.id }) }
   },
   async login(parent, { data: {email, password} }, { prisma }, info) {
     const user = await getUserFromLoginInput({ email, password, prisma });
-    return { user, token: jwt.sign({ userId: user.id }, process.env.JWT_SECRET) }
+    return { user, token: generateToken({ id: user.id }) }
   },
   async deleteUser(parent, {}, { prisma, request }, info) {
     const id = getUserIdFromToken({ request });
     return await prisma.mutation.deleteUser({ where: { id } }, info);
   },
   async updateUser(parent, { data }, { prisma, request }, info) {
-    verifyPasswordLength({ password: data.password });
     const id = await getUserIdFromToken({ request })
+    if (data.password) {
+      verifyPasswordLength({ password: data.password });
+      data.password = await bcrypt.hash(data.password, 10);
+    }
     return await prisma.mutation.updateUser({  data, where: { id } }, info);
   }
 };

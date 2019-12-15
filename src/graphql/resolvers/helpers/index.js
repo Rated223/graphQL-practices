@@ -1,4 +1,5 @@
 import verifyEmailTaken from './verifyEmailTaken';
+import generateToken from "./generateToken";
 import getUserIdFromToken from './getUserIdFromToken';
 import verifyUserExist from "./verifyUserExist";
 import verifyPostExist from "./verifyPostExist";
@@ -11,6 +12,7 @@ import verifyAuthorOfComment from './verifyAuthorOfComment';
 
 export {
     verifyEmailTaken,
+    generateToken,
     getUserIdFromToken,
     verifyUserExist,
     verifyPostExist,

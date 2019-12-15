@@ -14,7 +14,7 @@ const Query = {
 const Mutation = {
   async createComment(parent, { data }, { prisma, request }, info) {
     const userId = await getUserIdFromToken({ request });
-    await verifyPostExist({ id: data.post, prisma });
+    await verifyPostExist({ id: data.post, prisma, checkPublished: true });
     data.author = { connect: { id: userId } };
     data.post = { connect: { id: data.post } }
     return await prisma.mutation.createComment({ data }, info)

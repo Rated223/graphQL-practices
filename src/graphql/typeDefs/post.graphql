@@ -1,6 +1,7 @@
 type Query {
   getPosts(query: String): [Post!]!
-  postById: Post!
+  getMyPosts: [Post!]!
+  postById(id: ID!): Post!
 }
 
 type Mutation {
@@ -11,6 +12,7 @@ type Mutation {
 
 type Subscription {
   post: PostSuscriptionPayload! 
+  myPost: PostSuscriptionPayload!
 }
 
 input CreatePostInput {

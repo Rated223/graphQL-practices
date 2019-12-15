@@ -3,7 +3,7 @@ import { importSchema } from 'graphql-import';
 import prisma from './prisma';
 
 const typeDefs = importSchema('src/graphql/schema.graphql');
-import resolvers from './graphql/resolver';
+import { resolvers, fragmentReplacements } from './graphql/resolver';
 import db from './db/db';
 
 const pubsub = new PubSub();
@@ -18,7 +18,8 @@ const server = new GraphQLServer({
       prisma,
       request
     }
-  }
+  },
+  fragmentReplacements
 });
 
 server.start(() => {

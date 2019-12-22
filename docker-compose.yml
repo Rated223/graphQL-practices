@@ -48,7 +48,7 @@ services:
       dockerfile: Dockerfile.server
     container_name: graphql-practices-server
     restart: always
-    command: ["npm", "start"]
+    command: ["npm", "run", "dev"]
     ports: 
       - "4000:4000"
     depends_on:

@@ -1,4 +1,0 @@
-build:
-  docker:
-    prisma: Dockerfile.prismaService
-    server: Dockerfile.server

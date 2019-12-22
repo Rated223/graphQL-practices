@@ -74,7 +74,6 @@ const Query = {
       } 
     }
     const post = await prisma.query.posts(opArgs,info);
-    console.log(post);
 
     if (post.length === 0) {
       throw new Error('Post not found');

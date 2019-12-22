@@ -4,10 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon src/index.js --ext js,json,graphql --exec babel-node",
-    "build": "babel src --out-dir dist",
+    "build": "babel src --out-dir dist --copy-files",
     "prod": "node dist/index.js",
-    "deploy": "npm run build && npm run prod",
+    "start": "npm run build && npm run prod",
+    "dev": "env-cmd ./config/dev.env nodemon src/index.js --ext js,json,graphql --exec babel-node",
     "test": "echo \"Error: no test specified\" && exit 1",
     "get-prisma-schema": "graphql get-schema -p prisma",
     "get-graphql-cli": "graphql --help"
@@ -16,10 +16,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@babel/polyfill": "^7.7.0",
     "babel-cli": "^6.26.0",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.7.0",
     "bcryptjs": "^2.4.3",
+    "env-cmd": "^10.0.1",
     "graphql-cli": "^2.16.4",
     "graphql-import": "^0.7.1",
     "graphql-merge-resolvers": "^1.1.12",

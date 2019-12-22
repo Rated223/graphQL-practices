@@ -1,5 +1,7 @@
+# import CommentOrderByInput from '../../generated/prisma.graphql'
+
 type Query {
-  getUsers(query: String): [User!]!
+  getUsers(query: String, first: Int, skip: Int, after: String, orderBy: UserOrderByInput): [User!]!
   userById(id: String!): User!
   myInfo: User!
 }
@@ -35,6 +37,8 @@ type User {
   password: String!
   posts: [Post!]!
   comments: [Comment!]!
+  updatedAt: String!
+  createdAt: String!
 }
 
 type AuthPayload {

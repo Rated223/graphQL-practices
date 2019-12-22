@@ -6,33 +6,51 @@ import {
 } from './helpers';
 
 const Query = {
-  getPosts(parent, { query }, { prisma }, info) {
-    const opArgs = { where: { published: true } };
+  getPosts(parent, args, { prisma }, info) {
+    const opArgs = { 
+      where: { 
+        published: true 
+      },
+      first: args.first,
+      skip: args.skip,
+      after: args.after,
+      orderBy: args.orderBy, 
+    };
 
-    if (query) {
+    if (args.query) {
       opArgs.where.OR = [
         {
-          title_contains: query
+          title_contains: args.query
         },
         {
-          body_contains: query
+          body_contains: args.query
         }
       ]
     }
 
     return prisma.query.posts(opArgs, info);
   },
-  async getMyPosts(parent, { query }, { prisma, request }, info) {
+  async getMyPosts(parent, args, { prisma, request }, info) {
     const id = getUserIdFromToken({ request })
-    const opArgs = { where: { author: { id } } }
+    const opArgs = { 
+      where: { 
+        author: { 
+          id 
+        }
+      },
+      first: args.first,
+      skip: args.skip,
+      after: args.after,
+      orderBy: args.orderBy, 
+    }
 
-    if (query) {
+    if (args.query) {
       opArgs.where.OR = [
         {
-          title_contains: query
+          title_contains: args.query
         },
         {
-          body_contains: query
+          body_contains: args.query
         }
       ]
     }

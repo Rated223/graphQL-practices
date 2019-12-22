@@ -1,0 +1,9 @@
+FROM prismagraphql/prisma:1.12-alpha
+
+ARG PRISMA_CONFIG_PATH
+
+COPY prisma-env.yml prisma.yml
+
+ENV PRISMA_CONFIG_PATH prisma.yml
+
+EXPOSE 4466

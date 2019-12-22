@@ -1,6 +1,8 @@
+# import PostOrderByInput, from '../../generated/prisma.graphql'
+
 type Query {
-  getPosts(query: String): [Post!]!
-  getMyPosts: [Post!]!
+  getPosts(query: String, first: Int, skip: Int, after: String, orderBy: PostOrderByInput): [Post!]!
+  getMyPosts(query: String, first: Int, skip: Int, after: String, orderBy: PostOrderByInput): [Post!]!
   postById(id: ID!): Post!
 }
 
@@ -34,6 +36,8 @@ type Post {
   published: Boolean!
   author: User!
   comments: [Comment!]!
+  updatedAt: String!
+  createdAt: String!
 }
 
 type PostSuscriptionPayload {

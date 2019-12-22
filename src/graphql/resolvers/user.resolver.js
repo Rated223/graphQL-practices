@@ -11,7 +11,12 @@ import {
 
 const Query = {
   getUsers(parent, args, { prisma }, info) {
-    const opArgs = {};
+    const opArgs = {
+      first: args.first,
+      skip: args.skip,
+      after: args.after,
+      orderBy: args.orderBy
+    };
 
     if (args.query) {
       opArgs.where = {

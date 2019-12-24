@@ -1,4 +1,3 @@
-#endpoint: ${env:PRISMA_YML_ENDOPINT}
-endpoint: https://rated-graphql-app-5a5368aa24.herokuapp.com/graphQL_practices/prod
+endpoint: ${env:PRISMA_YML_ENDOPINT}
 datamodel: datamodel.prisma
 secret: ${env:PRISMA_SECRET}

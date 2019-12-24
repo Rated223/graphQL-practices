@@ -4,8 +4,8 @@ services:
     image: postgres:12.1
     container_name: graphql-practices-db
     restart: always
-    # ports: 
-    #   - "5432:5432"
+    ports: 
+      - "5432:5432"
     environment:
       POSTGRES_DB: $POSTGRES_DB
       POSTGRES_USER: $POSTGRES_USER
@@ -53,7 +53,7 @@ services:
       - "4000:4000"
     depends_on:
       - prisma
-    env_file: .env
+    env_file: config/dev.env
     networks:
       - "net"
     volumes:

@@ -1,6 +1,7 @@
 node_modules/
 dist/
 config/
+apollo-client/
 package-lock.json
 .env
 prisma-env.yml

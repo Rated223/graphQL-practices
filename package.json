@@ -8,9 +8,14 @@
     "prod": "node dist/index.js",
     "start": "npm run build && npm run prod",
     "dev": "env-cmd -f ./config/dev.env nodemon src/index.js --ext js,json,graphql --exec babel-node",
-    "test": "env-cmd -f ./config/test.env jest",
+    "test": "env-cmd -f ./config/test.env jest --detectOpenHandles --forceExit",
+    "test-watch": "env-cmd -f ./config/test.env jest --detectOpenHandles --forceExit --watch",
     "get-prisma-schema": "graphql get-schema -p prisma",
     "get-graphql-cli": "graphql --help"
+  },
+  "jest": {
+    "globalSetup": "./tests/setup/globalSetup.js",
+    "globalTeardown": "./tests/setup/globalTeardown.js"
   },
   "keywords": [],
   "author": "",
@@ -22,8 +27,11 @@
     "@babel/plugin-proposal-object-rest-spread": "^7.7.7",
     "@babel/polyfill": "^7.7.0",
     "@babel/preset-env": "^7.7.7",
+    "apollo-boost": "^0.4.7",
     "bcryptjs": "^2.4.3",
+    "cross-fetch": "^3.0.4",
     "env-cmd": "^10.0.1",
+    "graphql": "^14.5.8",
     "graphql-cli": "^2.16.4",
     "graphql-import": "^0.7.1",
     "graphql-merge-resolvers": "^1.1.12",
@@ -32,6 +40,7 @@
     "prisma-binding": "^2.3.16"
   },
   "devDependencies": {
+    "@babel/register": "^7.7.7",
     "jest": "^24.9.0",
     "nodemon": "^1.19.2"
   }
